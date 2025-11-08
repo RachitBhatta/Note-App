@@ -10,7 +10,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
-import { getData } from '/context/userContext'
+import { getData } from '@/context/userContext'
 import axios from 'axios'
 import { toast } from 'sonner'
 
