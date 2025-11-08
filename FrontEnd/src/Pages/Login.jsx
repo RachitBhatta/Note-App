@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import {
@@ -18,7 +19,7 @@ import { getData } from '@/context/userContext'
 import Google from "../assets/googleLogo.png"
 
 const Login = () => {
-    const {setUser} = getData()
+    const { setUser } = getData()
     const navigate = useNavigate()
     const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
@@ -38,6 +39,7 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault()
         console.log(formData);
+        
         try {
             setIsLoading(true)
             const res = await axios.post(`http://localhost:8000/user/login`, formData, {
@@ -45,20 +47,34 @@ const Login = () => {
                     "Content-Type": "application/json"
                 }
             })
+            
+            console.log("Login Response:", res.data) // ✅ Debug log
+            
             if (res.data.success) {
-                navigate('/')
-                setUser(res.data.user)
+                setUser(res.data.data)
                 localStorage.setItem("accessToken", res.data.accessToken)
                 toast.success(res.data.message)
+                navigate('/')
             }
         } catch (error) {
-            console.log(error);
-
+            // ✅ IMPROVED ERROR HANDLING
+            console.error("Login Error:", error)
+            
+            if (error.response) {
+                // Backend responded with error
+                toast.error(error.response.data.message || "Login failed")
+            } else if (error.request) {
+                // Request made but no response
+                toast.error("Cannot connect to server. Please check if backend is running.")
+            } else {
+                // Other errors
+                toast.error("Something went wrong. Please try again.")
+            }
         } finally {
             setIsLoading(false)
         }
-
     }
+
     return (
         <div className='relative w-full h-screen md:h-[760px] bg-green-100 overflow-hidden'>
             <div className='min-h-screen flex flex-col to-muted/20'>
@@ -76,7 +92,7 @@ const Login = () => {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className="flex flex-col gap-6">
+                                <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                                     <div className="grid gap-2">
                                         <Label htmlFor="email">Email</Label>
                                         <Input
@@ -106,6 +122,7 @@ const Login = () => {
                                                 required
                                             />
                                             <Button
+                                                type="button"
                                                 variant='ghost'
                                                 size="sm"
                                                 className='absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent'
@@ -115,27 +132,27 @@ const Login = () => {
                                                 {
                                                     showPassword ? <EyeOff className="w-4 h-4 text-gray-600" /> : <Eye className="w-4 h-4 text-gray-600" />
                                                 }
-
                                             </Button>
                                         </div>
                                     </div>
-                                </div>
+                                    
+                                    <Button type="submit" className="w-full bg-green-600 hover:bg-green-500" disabled={isLoading}>
+                                        {
+                                            isLoading ? (
+                                                <>
+                                                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                                                    Logging in...
+                                                </>
+                                            ) : "Login"
+                                        }
+                                    </Button>
+                                </form>
                             </CardContent>
                             <CardFooter className="flex-col gap-2">
-                                <Button onClick={handleSubmit} type="submit" className="w-full bg-green-600 hover:bg-green-500">
-                                    {
-                                        isLoading ? (
-                                            <>
-                                                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                                                Logging into your account..
-                                            </>
-                                        ) : "Login"
-                                    }
-                                </Button>
-                                <Button onClick={()=>window.open("http://localhost:8000/auth/google", "_self")} className='w-full' variant='outline'>
-                                    <img src={Google} alt="" className='w-5'/>
+                                <Button onClick={() => window.open("http://localhost:8000/auth/google", "_self")} className='w-full' variant='outline'>
+                                    <img src={Google} alt="" className='w-5' />
                                     Login with Google
-                                    </Button>
+                                </Button>
                             </CardFooter>
                         </Card>
                     </div>

@@ -73,7 +73,7 @@ const verification=async(req,res)=>{
         }
         const user=await User.findById(decoded.id)
         if(!user){
-            res.status(404).json({
+            return res.status(404).json({
                 success:false,
                 message:"User not found"
             })
@@ -87,34 +87,37 @@ const verification=async(req,res)=>{
             message:"Email Verified Successfully"
         })
     } catch (error) {
-        
+        return res.status(500).json({
+            success:false,
+            message:error.message
+        })
     }
 }
 const loginUser=async(req,res)=>{
         try {
             const {email,password}=req.body;
             if(!email||!password){
-                res.status(400).json({
+                return res.status(400).json({
                     success:false,
                     message:"All fields are required"
                 })
             }
             const user=await User.findOne({email})
             if(!user){
-                res.status(401).json({
+                return res.status(401).json({
                     success:false,
                     message:"Unauthorized Access"
                 })
             }
             const passwordCheck=await bcrypt.compare(password,user.password)
             if(!passwordCheck){
-                res.status(402).json({
+                return res.status(402).json({
                     success:false,
                     message:"Incorrect Password"
                 })
             }
             if(await user.isVerified!==true){
-                res.status(403).json({
+                return res.status(403).json({
                     success:false,
                     message:"Login After Being Verified"
                 })
@@ -133,7 +136,7 @@ const loginUser=async(req,res)=>{
 
             user.isLoggedIn=true;
             await user.save();
-            res.status(200).json({
+            return res.status(200).json({
                 success:true,
                 message:`Welcome Back,${user.username}`,
                 accessToken,
@@ -141,7 +144,7 @@ const loginUser=async(req,res)=>{
                 data:user
             })
         } catch (error) {
-            res.status(500).json({
+            return res.status(500).json({
                 success:false,
                 message:error.message
             })
@@ -185,7 +188,7 @@ const forgotPassword=async(req,res)=>{
             message:"OTP sent sucessfully"
         })
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             success:false,
             message:error.message
         })
